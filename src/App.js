@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { throwStatement } from '@babel/types';
+import {Container,Navbar,Nav, Row,Col,Jumbotron,DropdownButton,Dropdown,Button} from 'react-bootstrap';
 
 class Box extends React.Component{
 
@@ -32,7 +32,7 @@ class Board extends React.Component{
     {
       for(var j=0;j<9;j++)
       {
-        htmljsx.push(<Box val={this.props.board[i][j]>0 ?this.props.board[i][j]:undefined} 
+        htmljsx.push(<Box val={this.props.board[i][j]>0 ?this.props.board[i][j]:''} 
                           xCoord={i}
                           yCoord={j}
                           handleInput={this.handleBoardChange}
@@ -55,8 +55,9 @@ class App extends React.Component{
     super(props);
     this.state = {
       board: [[],[],[],[],[],[],[],[],[]],
-      message:'',
-      sol:null
+      message:'Welcome Brainstormer!',
+      sol:null,
+      level:'easy'
     }
   }
 
@@ -86,7 +87,7 @@ class App extends React.Component{
 
   checkSol = ()=>{
     var arr = this.state.board,solu=this.state.sol;
-    if(JSON.stringify(arr)==JSON.stringify(solu))
+    if(JSON.stringify(arr)===JSON.stringify(solu))
       this.setState({
         message:'Correct Solution :)'
       })
@@ -99,22 +100,71 @@ class App extends React.Component{
   render(){
     return(
       <div>
-        <p>Sudoku</p>
-        <Board board={this.state.board} onChanging={this.alterState}/>
-        <p>{this.state.message}</p>
-        <button type="button" onClick={this.viewResult}>View Result</button>
-        <button type="button" onClick={this.checkSol}>Check Solution</button>
+       <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+        <Navbar.Brand href="#">Sudoku</Navbar.Brand>
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Collapse id="responsive-navbar-nav">
+          <Nav>
+          <Nav.Link href="https://github.com/amulyagaur/react-sudoku">View On Github</Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+        </Navbar>
+        <Container> 
+          <Row>
+            <Col>
+            <Jumbotron fluid>
+              <Container>
+                <h1>{this.state.message}</h1>
+                
+              </Container>
+            </Jumbotron>
+            <DropdownButton id="dropdown-basic-button" title="Choose Difficulty">
+              <Dropdown.Item onClick={()=>{this.setState({
+                level:'easy'
+              });
+              this.setBoard();
+            }
+            }>Easy</Dropdown.Item>
+              <Dropdown.Item onClick={()=>{this.setState({
+                level:'medium'
+              });
+              this.setBoard();
+              }
+              }>Medium</Dropdown.Item>
+              <Dropdown.Item onClick={()=>{this.setState({
+                level:'hard'
+              });
+              this.setBoard();}}>Hard</Dropdown.Item>
+              <Dropdown.Item onClick={()=>{this.setState({
+                level:'random'
+              });
+              this.setBoard();}}>Random</Dropdown.Item>
+            </DropdownButton>
+            <br/>
+            <Button variant="outline-success" onClick={this.viewResult}>View Result</Button>
+            <Button variant="outline-warning" onClick={this.checkSol}>Check Solution</Button>
+            </Col>
+            <Col>
+            <br/>
+            <Board board={this.state.board} onChanging={this.alterState}/>
+            </Col>        
+        </Row>
+        </Container>
       </div>
     )
   }
 
-  componentDidMount(){
-    fetch("https://sugoku.herokuapp.com/board?difficulty=easy")
+  setBoard= ()=>{
+    this.setState({
+      board:[[],[],[],[],[],[],[],[],[]]
+    })
+    fetch('https://sugoku.herokuapp.com/board?difficulty='+this.state.level)
       .then(res => res.json())
       .then(
         (result) => {
+          var dd1 = result.board.slice();
           this.setState({
-            board: result.board
+            board: dd1
           });
           const data = {board:this.state.board}
 
@@ -138,6 +188,10 @@ class App extends React.Component{
           });
         }
       )
+  }
+
+  componentDidMount(){
+    this.setBoard();
   }
 }
 
